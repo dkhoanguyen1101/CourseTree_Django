@@ -46,7 +46,7 @@ class Course(models.Model):
     note    = models.CharField(max_length=200, default = "",blank=True)
 
     def __str__(self):
-        return (self.MainCourse.aCourse + " "+ str(self.MainCourse.num))
+        return (self.MainCourse.aCourse + " "+ str(self.MainCourse.num) + "(note : " + self.note +")")
         
 
 class Node(models.Model):
