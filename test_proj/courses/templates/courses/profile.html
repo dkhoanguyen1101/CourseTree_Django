@@ -1,40 +1,67 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
- 
-    <title>UofC Course - {{username}}'s Profile' </title>
-    
 
 
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1" />
-<!-- Google font -->
-    <link href="https://fonts.googleapis.com/css2?family=Sansita+Swashed&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@500;700&display=swap" rel="stylesheet">
+{% extends "base_generic.html" %}
 
-<!--fontawesome 5 for icons -->
-<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.0/css/all.css" integrity="sha384-OLYO0LymqQ+uHXELyx93kblK5YIS3B2ZfLGBmsJaUyor7CpMTBsahDHByqSuWW+q" crossorigin="anonymous">
+{% block title %}
+UofC Course - {{username}}'s Profile
+{% endblock %}
 
-<!-- Boostrap4 Library -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
-</head>
+{% block content %}
 
-<body>
-    hi {{username}}, your course:
+hi {{username}}, your course:
 
-    {% if course_list %}
-        <ul>
-        {% for course in course_list %}
-            <li><a href="{% url 'viewCourse' course.id %}">{{ course }}</a></li>
-        {% endfor %}
-        </ul>
-    {% else %}
-        <p>you dont have a course yet.</p>
-    {% endif %}
+{% if course_list %}
+    <ul>
+    {% for course in course_list %}
+   
+        <li>
+            <form action="{% url 'delete_course' course.id %}" method="post">
+                {% csrf_token %}
+                <a href="{% url 'viewCourse' course.id %}">{{ course }}</a>
+                <input type="submit" value="X Delete Course" style="background: none;border: none;color:red;">
+            </form>
+        </li>
 
-</body>
-</html>
+       
+        
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>you dont have a course yet.</p>
+{% endif %}
+
+    <p>create a course</p>
+
+    <form action="" method = POST id = "courseForm" data-nums-url= "{% url 'ajax_load_num' %}" novalidate>
+        {% csrf_token %}
+        <table>
+            {{ form.as_table }} 
+          </table
+        <br>
+        <input type="submit" value="Create">
+    </form>
+
+
+
+
+
+    <script>
+         $("#id_courseName").change(function () {
+            var url = $("#courseForm").attr("data-nums-url");  
+            var course = $(this).val();
+            $.ajax({                       // initialize an AJAX request
+            url: url,                    // set the url of the request (= localhost:8000/hr/ajax/load-cities/)
+            data: {
+            'course': course       // add the country id to the GET parameters
+            },
+            success: function (data) {   // `data` is the return of the `load_cities` view function
+            $("#id_courseNum").html(data);  // replace the contents of the city input with the data that came from the server
+            }
+        });
+
+    });
+  </script>
+
+
+{% endblock %}
