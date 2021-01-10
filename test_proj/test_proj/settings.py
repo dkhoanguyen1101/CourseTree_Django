@@ -28,7 +28,7 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 LOGIN_REDIRECT_URL = '/profile/'
-
+LOGOUT_REDIRECT_URL = "/"
 
 
 # Application definition
@@ -83,7 +83,7 @@ DATABASES = {
         'ENGINE': 'sql_server.pyodbc',
         'USER': 'superadmin',
         'PASSWORD': 'Motconnguadaucatauboco',
-        'NAME' : 'UofC_Tree_Apps',
+        'NAME': 'UofC_Tree_Apps',
         'HOST': 'DESKTOP-H322HOI',
 
 
@@ -92,7 +92,6 @@ DATABASES = {
         },
     },
 }
-
 
 
 # Password validation

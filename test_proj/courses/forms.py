@@ -1,6 +1,8 @@
 from django import forms
 from django.utils.safestring import mark_safe
 from .models import baseCourseCode, baseCourse
+from django.forms import formset_factory
+
 # import pyodbc
 
 # conn = pyodbc.connect('Driver={ODBC Driver 17 for SQL Server};'
@@ -45,3 +47,24 @@ class createCourseForm(forms.Form):
     courseNum = forms.ChoiceField(label=mark_safe(
         'Course num'), choices=NUM_CHOICE, required=True)
     note = forms.CharField(label=mark_safe('Add note'))
+
+
+class nodeForm(forms.Form):
+    courseName = forms.ChoiceField(label=mark_safe(
+        'Course name'), choices=ALL_COURSES, required=False,)
+    courseNum = forms.ChoiceField(label=mark_safe(
+        'Course num'), choices=NUM_CHOICE, required=True)
+
+
+class nodeForm1(forms.Form):
+    courseName1 = forms.ChoiceField(label=mark_safe(
+        'Course name'), choices=ALL_COURSES, required=False,)
+    courseNum1 = forms.ChoiceField(label=mark_safe(
+        'Course num'), choices=NUM_CHOICE, required=True)
+
+
+class nodeForm2(forms.Form):
+    courseName2 = forms.ChoiceField(label=mark_safe(
+        'Course name'), choices=ALL_COURSES, required=False,)
+    courseNum2 = forms.ChoiceField(label=mark_safe(
+        'Course num'), choices=NUM_CHOICE, required=True)

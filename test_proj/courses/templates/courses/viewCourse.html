@@ -1,149 +1,407 @@
-{% extends "base_generic.html" %} 
+  {% extends "base_generic.html" %} 
 
-{% block title %} {{course}} {% endblock %}
+  {% block title %} {{course}} {% endblock %}
 
-{% block content %}
+  {% block content %}
 
-<p>UR looking at {{course}}</p>
+  <a href="/profile/">back to profile</a>
+
+  <style>
+    
+    .node {
+      cursor: pointer;
+    }
+
+    rect.front {
+      fill: white;
+      stroke-width: 3px;
+      stroke:steelblue
+    }
+
+    
+    rect.noderect {
+      fill-opacity:0;
+      stroke-width: 3px;
+    }
 
 
-<script>
+    .node text {
+      font: 15px sans-serif;
+      background-color: blue;
+    }
+    .link {
+      fill: none;
+      stroke: #ccc;
+      stroke-width: 2px;
+    }
+    
+    
+    </style>
+
+  <p>UR looking at {{course}}</p>
+
+  <div class='tree'></div>
+
+  {% include "./changeSimpleNode.html" %}
 
 
-  console.log("{{course.MainCourse}}")
+  <script>
 
-  var treeData = [ {{graph|safe}} ];
-  // var treeData = [ {"name": "ACCT 674", "children": []} ];
-  
-  
+
+    console.log("{{course.MainCourse}}")
+
+    var treeData = [ {{graph|safe}} ];
+    
+
   // ************** Generate the tree diagram	 *****************
-  var margin = {top: 20, right: 120, bottom: 20, left: 120},
-    width = 960 - margin.right - margin.left,
+  var margin = {top: 0, right: 120, bottom: 0, left: 120},
+    width = 1500 - margin.right - margin.left,
     height = 500 - margin.top - margin.bottom;
     
   var i = 0,
-    duration = 750,
     root;
-  
+
   var tree = d3.layout.tree()
     .size([height, width]);
-  
+
   var diagonal = d3.svg.diagonal()
     .projection(function(d) { return [d.y, d.x]; });
-  
-  var svg = d3.select("body").append("svg")
+
+  var svg = d3.select("div.tree").append("svg")
     .attr("width", width + margin.right + margin.left)
     .attr("height", height + margin.top + margin.bottom)
     .append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-  
+
   root = treeData[0];
   root.x0 = height / 2;
   root.y0 = 0;
     
   update(root);
-  
-  d3.select(self.frameElement).style("height", "500px");
-  
+
+  let courseToEdit = root;
+
+
   function update(source) {
-  
-    // Compute the new tree layout.
-    var nodes = tree.nodes(root).reverse(),
-      links = tree.links(nodes);
-  
+    let count = {{count}};
+  // Compute the new tree layout.
+    let nodes = tree.nodes(root).reverse(),
+    links = tree.links(nodes);
+
     // Normalize for fixed-depth.
-    nodes.forEach(function(d) { d.y = d.depth * 180; });
-  
-    // Update the nodes…
-    var node = svg.selectAll("g.node")
-      .data(nodes, function(d) { return d.id || (d.id = ++i); });
-  
-    // Enter any new nodes at the parent's previous position.
-    var nodeEnter = node.enter().append("g")
-      .attr("class", "node")
-      .attr("transform", function(d) { return "translate(" + source.y0 + "," + source.x0 + ")"; })
-      .on("click", click);
-  
-    nodeEnter.append("circle")
-      .attr("r", 1e-6)
-      .style("fill", function(d) { return d._children ? "lightsteelblue" : "#fff"; });
-  
+    nodes.forEach(function(d) { d.y = d.depth/count*width; });
+
+  // Declare the nodes…
+  let node = svg.selectAll("g.node")
+    .data(nodes, function(d) { return d.id || (d.id = ++i); });
+
+  // Enter the nodes.
+  let nodeEnter = node.enter().append("g")
+    .attr("class", "node")
+    .attr("width" , "0.5em")
+    .attr("transform", function(d) { 
+    return "translate(" + d.y + "," + d.x + ")"; });
+
+    nodeEnter.append("rect")
+    .attr("class","front")
+    .attr("height", 25)
+    .attr("width", function(d) { if(d.name.length < 5){return d.name.length * 20;} return d.name.length*15})
+    .attr("x", function(d) { return d.children || d._children ? -13 -  d.name.length*12 : 0.5* d.name.length; })
+    .attr("y", "-0.8em");
+
     nodeEnter.append("text")
-      .attr("x", function(d) { return d.children || d._children ? -13 : 13; })
-      .attr("dy", ".35em")
-      .attr("text-anchor", function(d) { return d.children || d._children ? "end" : "start"; })
-      .text(function(d) { return d.name; })
-      .style("fill-opacity", 1e-6);
-  
-    // Transition nodes to their new position.
-    var nodeUpdate = node.transition()
-      .duration(duration)
-      .attr("transform", function(d) { return "translate(" + d.y + "," + d.x + ")"; });
-  
-    nodeUpdate.select("circle")
-      .attr("r", 10)
-      .style("fill", function(d) { return d._children ? "lightsteelblue" : "#fff"; });
-  
-    nodeUpdate.select("text")
-      .style("fill-opacity", 1);
-  
-    // Transition exiting nodes to the parent's new position.
-    var nodeExit = node.exit().transition()
-      .duration(duration)
-      .attr("transform", function(d) { return "translate(" + source.y + "," + source.x + ")"; })
-      .remove();
-  
-    nodeExit.select("circle")
-      .attr("r", 1e-6);
-  
-    nodeExit.select("text")
-      .style("fill-opacity", 1e-6);
-  
-    // Update the links…
-    var link = svg.selectAll("path.link")
-      .data(links, function(d) { return d.target.id; });
-  
-    // Enter any new links at the parent's previous position.
-    link.enter().insert("path", "g")
-      .attr("class", "link")
-      .attr("d", function(d) {
-      var o = {x: source.x0, y: source.y0};
-      return diagonal({source: o, target: o});
+    .attr("class", "nodetext")
+    .attr("x", function(d) { return d.children || d._children ? -13 : 13; })
+    .attr("dy", ".35em")
+    .attr("text-anchor", function(d) { 
+      return d.children || d._children ? "end" : "start"; })
+    .text(function(d) { return d.name; })
+    .style("fill-opacity", 1);
+
+    let nodeArr = new Array()
+
+    nodeEnter.append("rect")
+    .attr("class", "noderect")
+    .attr("height", 25)
+    .attr("width", function(d) { if(d.name.length < 5){return d.name.length * 20;} return d.name.length*15})
+    .attr("x", function(d) { return d.children || d._children ? -13 -  d.name.length*12 : 0.5* d.name.length; })
+    .attr("y", "-0.8em")
+    .on("mouseover", handleMouseOver)
+    .on("mouseout", handleMouseOut)
+    .on("click", function(d){
+      courseToEdit = d;
+
+      if(d.type == "NODE"){
+        document.getElementById("editCourseNode").style.display="block";
+        document.getElementById("editOther").style.display="none";
+      }else {
+        document.getElementById("editCourseNode").style.display="none";
+        document.getElementById("editOther").style.display="block";
+        nodeArr = d.children
+        tohtml = '<h4> Courses </h4>'
+           $.each(nodeArr, function(index, value){
+          tohtml += ( '<p>'+ value.name + '<a href="/deleteNode/123" style="color:red"> delete this node</a></p>'.replace('123', value.id));
+            document.getElementById("display-nodes").innerHTML = tohtml;
+
       });
-  
-    // Transition links to their new position.
-    link.transition()
-      .duration(duration)
-      .attr("d", diagonal);
-  
-    // Transition exiting nodes to the parent's new position.
-    link.exit().transition()
-      .duration(duration)
-      .attr("d", function(d) {
-      var o = {x: source.x, y: source.y};
-      return diagonal({source: o, target: o});
-      })
-      .remove();
-  
-    // Stash the old positions for transition.
-    nodes.forEach(function(d) {
-    d.x0 = d.x;
-    d.y0 = d.y;
+    }});
+
+
+
+
+  // Declare the links…
+  var link = svg.selectAll("path.link")
+    .data(links, function(d) { return d.target.id; });
+
+  // Enter the links.
+  link.enter().insert("path", "g")
+    .attr("class", "link")
+      .style("stroke", function(d) { return d.target.level; })
+    .attr("d", diagonal);
+
+  }
+
+
+  function handleMouseOver(d, i) {
+  // console.log(d)
+  d3.select(this).attr({
+    stroke: "red",
+  });
+
+  // console.log(d.x);
+
+
+
+  if (d.pre != "none" ){
+  svg.append("text").attr({
+                class: "t" +  parseInt(d.x) + "-" + parseInt(d.y) + "-" + i,  
+                  x: d.y ,
+                  y: d.x - 45,
+              })
+              .attr("style", "stroke:white; stroke-width:0.2em")
+              .append("tspan").text(function() {
+                return "Course name: " + d.courseName ;  // Value of the text
+              });
+
+  svg.append("text").attr({
+                class: "t" +  parseInt(d.x) + "-" + parseInt(d.y) + "-" + i,  
+                  x: d.y ,
+                  y: d.x - 45,
+              })
+              .attr("style", "fill:black")
+              .text(function() {
+                return "Course name: " + d.courseName ;  // Value of the text
+              });
+  svg.append("text").attr({
+                class: "t" +  parseInt(d.x) + "-" + parseInt(d.y) + "-" + i,  
+                  x: d.y ,
+                  y: d.x - 25,
+              })
+              .attr("style", "stroke:white; stroke-width:0.2em")
+              .append("tspan").text(function() {
+                return "Prerequisite: " + d.pre ;  // Value of the text
+              });
+
+  svg.append("text").attr({
+                class: "t" +  parseInt(d.x) + "-" + parseInt(d.y) + "-" + i,  
+                  x: d.y ,
+                  y: d.x - 25,
+              })
+              .attr("style", "fill:black")
+              .text(function() {
+                return "Prerequisite: " + d.pre ;  // Value of the text
+              });
+            }
+  else{
+    svg.append("text").attr({
+                class: "t" +  parseInt(d.x) + "-" + parseInt(d.y) + "-" + i,  
+                  x: d.y ,
+                  y: d.x - 25,
+              })
+              .attr("style", "stroke:white; stroke-width:0.2em")
+              .append("tspan").text(function() {
+                return "Course name: " + d.courseName ;  // Value of the text
+              });
+
+  svg.append("text").attr({
+                class: "t" +  parseInt(d.x) + "-" + parseInt(d.y) + "-" + i,  
+                  x: d.y ,
+                  y: d.x - 25,
+              })
+              .attr("style", "fill:black")
+              .text(function() {
+                return "Course name: " + d.courseName ;  // Value of the text
+              });
+  };
+
+
+
+  }
+
+  function handleMouseOut(d, i) {
+  d3.select(this).attr({
+    stroke: "steelblue",
+  });
+  d3.selectAll("text.t" + parseInt(d.x) + "-" + parseInt(d.y) + "-" + i).remove();  
+
+
+  }
+  $("#id_courseName").change(function () {
+              var url = $("#courseForm").attr("data-nums-url");  
+              var course = $(this).val();
+              $.ajax({                       // initialize an AJAX request
+              url: url,                    // set the url of the request (= localhost:8000/hr/ajax/load-cities/)
+              data: {
+              'course': course       // add the country id to the GET parameters
+              },
+              success: function (data) {   // `data` is the return of the `load_cities` view function
+              $("#id_courseNum").html(data);  // replace the contents of the city input with the data that came from the server
+              }
+          });
+
+      });
+
+      $("#id_courseName1").change(function () {
+              var url = $("#courseForm1").attr("data-nums-url");  
+              var course = $(this).val();
+              $.ajax({                       // initialize an AJAX request
+              url: url,                    // set the url of the request (= localhost:8000/hr/ajax/load-cities/)
+              data: {
+              'course': course       // add the country id to the GET parameters
+              },
+              success: function (data) {   // `data` is the return of the `load_cities` view function
+              $("#id_courseNum1").html(data);  // replace the contents of the city input with the data that came from the server
+              }
+          });
+
+      });
+
+      $("#id_courseName2").change(function () {
+              var url = $("#courseForm2").attr("data-nums-url");  
+              var course = $(this).val();
+              $.ajax({                       // initialize an AJAX request
+              url: url,                    // set the url of the request (= localhost:8000/hr/ajax/load-cities/)
+              data: {
+              'course': course       // add the country id to the GET parameters
+              },
+              success: function (data) {   // `data` is the return of the `load_cities` view function
+              $("#id_courseNum2").html(data);  // replace the contents of the city input with the data that came from the server
+              }
+          });
+
+      });
+
+
+      $("#choices").change(function () {
+        let x = document.getElementById("choices").value;
+          // console.log(x);
+          if (x == "change"){
+              document.getElementById("change-course").style.display="block";
+              document.getElementById("delete-course").style.display="none";
+              document.getElementById("add").style.display="none";
+          } else if(x=="delete") {
+              document.getElementById("change-course").style.display="none";
+              document.getElementById("delete-course").style.display="block";
+              document.getElementById("add").style.display="none";
+          } else{
+              document.getElementById("change-course").style.display="none";
+              document.getElementById("delete-course").style.display="none";
+              document.getElementById("add").style.display="block";
+          }
+      });
+
+      $("#type_choice").change(function (){
+        let chosenVal = document.getElementById("type_choice").value;
+        console.log(chosenVal);
+        if(chosenVal == "NODE"){
+          document.getElementById("courseForm1").style.display="block";
+        }else{
+          document.getElementById("courseForm1").style.display="none";
+        }
+      });
+      
+
+      $("#type_choice2").change(function (){
+        let chosenVal = document.getElementById("type_choice2").value;
+        console.log(chosenVal);
+        if(chosenVal == "NODE"){
+          document.getElementById("courseForm2").style.display="block";
+        }else{
+          document.getElementById("courseForm2").style.display="none";
+        }
+      });
+
+
+      function changeCourse(){
+        
+        var url = "{% url 'changeCourse' 123 %}".replace('123', courseToEdit.id);
+        let newNode = document.getElementById("id_courseNum").value;
+
+        $.ajax({
+          url:url,
+          data : {
+            'courseNum' : newNode,
+          },success: function() {   
+          location.reload();  
+    }
+      });
+    }
+
+    function addCourse(){
+        console.log("hehe")
+        var url = "{% url 'addChild' 123 %}".replace('123', courseToEdit.id);
+        let newNode = document.getElementById("id_courseNum1").value;
+        let choice = document.getElementById("type_choice").value;
+        $.ajax({
+          url:url,
+          data : {
+            'courseNum' : newNode,
+            'choice' : choice,
+            'mainCourse': {{course.id}},
+          },
+          success: function() {   
+          location.reload();  
+    }
+
+      });
+    }
+    
+    function deleteNode(){
+      var url = "{% url 'deleteNode' 123 %}".replace('123', courseToEdit.id);
+      $.ajax({
+        url:url,
+        data : {
+            'mainCourse': {{course.id}},
+          },
+        success: function() {   
+          console.log(1)
+        location.reload();  
+  }
+
     });
   }
-  
-  // Toggle children on click.
-  function click(d) {
-    if (d.children) {
-    d._children = d.children;
-    d.children = null;
-    } else {
-    d.children = d._children;
-    d._children = null;
+
+
+  function addCourse1(){
+        console.log("hehe")
+        var url = "{% url 'addChild' 123 %}".replace('123', courseToEdit.id);
+        let newNode = document.getElementById("id_courseNum2").value;
+        let choice = document.getElementById("type_choice2").value;
+        $.ajax({
+          url:url,
+          data : {
+            'courseNum' : newNode,
+            'choice' : choice,
+            'mainCourse': {{course.id}}
+          },
+          success: function() {   
+          location.reload();  
     }
-    update(d);
-  }
-  
+
+      });
+    }
   </script>
-  
-{% endblock %}
+
+    
+  {% endblock %}
+

@@ -86,7 +86,7 @@ class Node(models.Model):
     def __str__(self):
         if self.base:
             return (self.base.course_code)
-        return self.NodeType
+        return (self.NodeType)
 
 
 class baseCourseCode(models.Model):

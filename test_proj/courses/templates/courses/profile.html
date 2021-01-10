@@ -37,11 +37,12 @@ hi {{username}}, your course:
         {% csrf_token %}
         <table>
             {{ form.as_table }} 
-          </table
+        </table>
         <br>
         <input type="submit" value="Create">
     </form>
 
+    <a href="{% url 'logout' %}">log out</a>
 
 
 

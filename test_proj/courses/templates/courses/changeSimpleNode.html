@@ -1,0 +1,120 @@
+
+<div id = editCourseNode style="display: none;">
+<label for="choice">Choose an action:</label>
+<select id="choices" name="choices">
+    <option value="change">Change</option>
+    <option value="add child">Add Prerequisite</option>
+    <option value="delete">Delete</option>
+</select>
+    
+  
+
+<div id="change-course" style="display: block">
+<h4>Change node</h4>
+    
+<form onsubmit="return changCourse()" method="POST"  id = "courseForm" data-nums-url= "{% url 'ajax_load_num' %}" novalidate>
+    {% csrf_token %}
+
+    <table>
+        {{ nodeForm.as_table}}
+    </table>
+    <br>
+    <button id ="changeCourseButton" onclick="changeCourse()">Change</button>
+
+</form>
+</div>
+
+<div id ="add" style="display: none">
+    <h4>
+        Add Prerequisite
+    </h4>
+
+    <label for="type"><strong>Choose an type:</strong></label>
+    <select id="type_choice" name="type_choice">
+      <option value="NODE">A Course</option>
+      <option value="AND">And</option>
+      <option value="OR">Or</option>
+    </select>
+
+    <div class="addCourse">
+    
+    
+<form action="" method="POST"  id = "courseForm1" data-nums-url= "{% url 'ajax_load_num' %}" novalidate>
+    {% csrf_token %}
+
+    <table>
+        {{ nodeForm1.as_table}}
+    </table>
+    <br>
+
+</form> 
+<button id ="addOther" onclick="addCourse()">Add</button>
+
+    </div>
+
+
+
+</div>
+
+
+
+<div id="delete-course" style="display: none">
+    <h4>Delete Node</h4>
+    <p>
+        Delete this node will also delete its children, are you sure?
+    </p>
+    
+        <button onclick="deleteNode()">YES</button>
+
+</div>
+
+</div>
+
+<div id = "editOther" style="display: none;">
+    <div id="display-nodes"></div>
+
+    <h4>Add course</h4>
+
+    <label for="type"><strong>Choose an type:</strong></label>
+    <select id="type_choice2" name="type_choice2">
+      <option value="NODE">A Course</option>
+      <option value="AND">And</option>
+      <option value="OR">Or</option>
+    </select>
+
+    <div class="addCourse">
+    
+    
+        <form action="" method="POST"  id = "courseForm2" data-nums-url= "{% url 'ajax_load_num' %}" novalidate>
+            {% csrf_token %}
+        
+            <table>
+                {{ nodeForm2.as_table}}
+            </table>
+            <br>
+
+        </form> 
+        <button  onclick="addCourse1()">Add</button>
+
+
+    
+    
+    <div id="delete-other">
+        <h4>Delete Whole Node</h4>
+        <p>
+            Delete this node will also delete its children, are you sure?
+        </p>
+            <button onclick="deleteNode()">YES</button>
+    </div>
+
+</div>
+
+
+<!-- or node :
+add course
+delete node
+change type -->
+
+
+
+
