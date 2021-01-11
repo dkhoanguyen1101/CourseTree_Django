@@ -12,8 +12,8 @@ urlpatterns = [
     path('changeCourse/<int:node_id>', views.changeCourse, name='changeCourse'),
     path("addChild/<int:node_id>", views.addChild, name='addChild'),
     path("deleteNode/<int:node_id>", views.deleteNode, name='deleteNode'),
-    path("logout", views.logout_view, name='deleteNode'),
-    path('signup', views.signup, name='signup'),
+    path("logout/", views.logout_view, name='deleteNode'),
+    path('signup/', views.signup, name='signup'),
 
 
 
